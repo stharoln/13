@@ -1,0 +1,171 @@
+%% 문제 1
+clear; clc;
+rng(13);
+p = 0.35 + (0.95 - 0.35) * rand(1, 40);
+results = rand(5000, 40) < p;
+scores = sum(results, 2);
+avg_score = mean(scores);
+std_score = std(scores);
+fprintf('평균점수: %.4f\n', avg_score);
+fprintf('표준편차: %.4f\n', std_score);
+above_avg = sum(scores >= avg_score) / 5000;
+fprintf('평균 이상 학생 비율: %.4f\n', above_avg);
+figure;
+histogram(scores);
+title('점수 분포');
+xlabel('점수'); ylabel('학생 수');
+
+%% 문제 2
+clear; clc;
+weights = 100 + 4 * randn(10000, 20);
+box_avg = mean(weights, 2);
+fail = box_avg < 98 | box_avg > 102;
+fail_rate = sum(fail) / 10000;
+fprintf('불합격률: %.4f\n', fail_rate);
+figure;
+histogram(box_avg);
+xline(98, 'r', '98');
+xline(102, 'r', '102');
+title('상자 평균 무게 분포');
+xlabel('평균 무게(g)'); ylabel('상자 수');
+
+%% 문제 3
+clear; clc;
+N = randn(100000, 1);
+S = 1.8 + N;
+detected = S >= 1.2;
+detect_rate = sum(detected) / 100000;
+fprintf('감지 성공률: %.4f\n', detect_rate);
+figure;
+histogram(S);
+xline(1.2, 'r', '임계값 1.2');
+title('수신 신호 세기 분포');
+xlabel('S'); ylabel('빈도');
+
+%% 문제 4
+clear; clc;
+orders = poissrnd(180, 365, 1);
+total_time = zeros(365, 1);
+for d = 1:365
+    t = 6 + 2 * randn(orders(d), 1);
+    t(t < 0) = 0;
+    total_time(d) = sum(t);
+end
+exceed_rate = sum(total_time > 1200) / 365;
+fprintf('1200분 초과 날 비율: %.4f\n', exceed_rate);
+figure;
+subplot(2,1,1);
+bar(orders);
+title('하루 주문 수');
+xlabel('날짜'); ylabel('주문 수');
+subplot(2,1,2);
+bar(total_time);
+title('하루 총 처리 시간');
+xlabel('날짜'); ylabel('시간(분)');
+figure;
+scatter(orders, total_time);
+title('주문 수 vs 총 처리 시간');
+xlabel('주문 수'); ylabel('처리 시간(분)');
+
+%% 문제 5
+clear; clc;
+measurements = 25 + 0.8 * randn(10000, 30);
+avg_meas = mean(measurements, 2);
+in_range = avg_meas >= 24.7 & avg_meas <= 25.3;
+prob = sum(in_range) / 10000;
+fprintf('확률 추정값: %.4f\n', prob);
+figure;
+histogram(measurements(:,1), 'Normalization', 'probability');
+hold on;
+histogram(avg_meas, 'Normalization', 'probability');
+legend('센서 1개', '센서 30개 평균');
+title('측정값 분포 비교');
+xlabel('온도(도)'); ylabel('확률');
+
+%% 문제 6
+clear; clc;
+returns = 0.0008 + 0.015 * randn(5000, 60);
+asset = 100 * cumprod(1 + returns, 2);
+final = asset(:, end);
+fprintf('최종 자산 평균: %.4f\n', mean(final));
+fprintf('최솟값: %.4f\n', min(final));
+fprintf('최댓값: %.4f\n', max(final));
+loss_prob = sum(final < 100) / 5000;
+fprintf('100 미만 확률: %.4f\n', loss_prob);
+idx = randperm(5000, 30);
+figure;
+plot([zeros(30,1), asset(idx,:)]');
+title('자산 경로 (30개)');
+xlabel('일'); ylabel('자산가치');
+
+%% 문제 7
+clear; clc;
+inter = exprnd(8, 300, 1);
+arrive = cumsum(inter);
+service = 10 + 3 * randn(300, 1);
+service(service < 1) = 1;
+start_t = zeros(300, 1);
+end_t = zeros(300, 1);
+start_t(1) = arrive(1);
+end_t(1) = start_t(1) + service(1);
+for i = 2:300
+    start_t(i) = max(arrive(i), end_t(i-1));
+    end_t(i) = start_t(i) + service(i);
+end
+wait = start_t - arrive;
+fprintf('평균 대기시간: %.4f분\n', mean(wait));
+fprintf('최대 대기시간: %.4f분\n', max(wait));
+fprintf('20분 초과 비율: %.4f\n', sum(wait > 20) / 300);
+figure;
+histogram(wait);
+title('대기시간 분포');
+xlabel('대기시간(분)'); ylabel('환자 수');
+
+%% 문제 8
+clear; clc;
+p = [0.72, 0.81, 0.67, 0.90, 0.76];
+R = rand(100000, 5);
+detected = R < p;
+n_detected = sum(detected, 2);
+success = n_detected >= 3;
+detect_prob = sum(success) / 100000;
+fprintf('시스템 감지 확률: %.4f\n', detect_prob);
+figure;
+histogram(n_detected, -0.5:5.5);
+title('감지 모듈 수 분포');
+xlabel('감지 모듈 수'); ylabel('빈도');
+
+%% 문제 9
+clear; clc;
+n = 50000;
+pass1 = rand(n, 1) < 0.94;
+pass2 = false(n, 1);
+pass2(pass1) = rand(sum(pass1), 1) < 0.91;
+pass3 = false(n, 1);
+pass3(pass2) = rand(sum(pass2), 1) < 0.88;
+final_pass_rate = sum(pass3) / n;
+fprintf('최종 합격률: %.4f\n', final_pass_rate);
+fail1 = sum(~pass1);
+fail2 = sum(pass1 & ~pass2);
+fail3 = sum(pass2 & ~pass3);
+final_pass = sum(pass3);
+figure;
+bar([fail1, fail2, fail3, final_pass]);
+xticklabels({'1단계 탈락','2단계 탈락','3단계 탈락','최종 합격'});
+title('단계별 탈락/합격 현황');
+ylabel('제품 수');
+
+%% 문제 10
+clear; clc;
+n = 10000;
+server_load = 35 * randn(n, 1);
+overload = rand(n, 1) < 0.12;
+power = 500 + server_load + 120 * overload;
+exceed_rate = sum(power > 650) / n;
+fprintf('650 초과 비율: %.4f\n', exceed_rate);
+fprintf('과부하 발생일 평균 전력: %.4f\n', mean(power(overload)));
+fprintf('과부하 비발생일 평균 전력: %.4f\n', mean(power(~overload)));
+figure;
+histogram(power);
+title('전력 사용량 분포');
+xlabel('전력 사용량'); ylabel('일수');
